@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lamport y Cristian | Simulador</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
+  </head>
+  <body>
+    <header class="hero">
+      <p class="eyebrow">Sistemas distribuidos</p>
+      <h1>Dos algoritmos, dos problemas distintos</h1>
+      <p>
+        Lamport organiza el acceso a un recurso compartido. Cristian sincroniza relojes
+        usando un servidor de tiempo.
+      </p>
+    </header>
+
+    <main class="layout">
+      <section class="module module--lamport">
+        <div class="module__heading">
+          <div>
+            <span class="module__number">01</span>
+            <h2>Panaderia de Lamport</h2>
+          </div>
+          <p id="lamport-concept" class="explanation">
+            Los procesos elegidos juntos reciben el mismo ticket. Si hay empate, se compara
+            el ID fijo para decidir quien entra primero.
+          </p>
+        </div>
+
+        <div class="process-picker" id="process-picker">
+          <button class="process-option" type="button" data-process-id="1"><strong>P1</strong><span>Sin ticket</span></button>
+          <button class="process-option" type="button" data-process-id="2"><strong>P2</strong><span>Sin ticket</span></button>
+          <button class="process-option" type="button" data-process-id="3"><strong>P3</strong><span>Sin ticket</span></button>
+          <button class="process-option" type="button" data-process-id="4"><strong>P4</strong><span>Sin ticket</span></button>
+          <button class="process-option" type="button" data-process-id="5"><strong>P5</strong><span>Sin ticket</span></button>
+        </div>
+
+        <p class="selection-help">
+          Selecciona uno o varios procesos y pulsa <strong>Solicitar acceso</strong>.
+          Los seleccionados juntos representan una solicitud simultanea.
+        </p>
+        <div class="action-row">
+          <button class="button" id="assign-tickets" disabled>Solicitar acceso</button>
+          <button class="button" id="run-lamport" disabled>Mostrar orden</button>
+          <button class="button button--ghost" id="reset-lamport" type="button">Reiniciar</button>
+        </div>
+        <p class="error" id="lamport-error" role="alert"></p>
+        <div class="round-history" id="round-history"></div>
+
+        <div class="lamport-results" id="lamport-results" hidden>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>ID fijo</th><th>Ticket asignado</th><th>Posicion en la cola</th><th>Estado</th></tr></thead>
+              <tbody id="lamport-table"></tbody>
+            </table>
+          </div>
+          <aside class="winner-card">
+            <span>Entra primero</span>
+            <strong id="lamport-winner">P1</strong>
+            <p id="lamport-order"></p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="module module--cristian">
+        <div class="module__heading">
+          <div>
+            <span class="module__number">02</span>
+            <h2>Algoritmo de Cristian</h2>
+          </div>
+          <p id="cristian-concept" class="explanation">
+            Los clientes consultan un servidor y compensan el tiempo que tarda la respuesta
+            en viajar por la red.
+          </p>
+        </div>
+
+        <div class="server-box">
+          <div><span>Servidor de tiempo</span><strong>S</strong></div>
+          <label>Hora del servidor<input id="server-time" type="time" step="1" value="12:00:00" /></label>
+        </div>
+
+        <div class="client-inputs">
+          <article class="client-input" data-client-id="1">
+            <strong>Cliente C1</strong>
+            <label>Hora inicial<input class="client-time" type="time" step="1" value="11:58:30" /></label>
+            <label>RTT de red (ms)<input class="client-rtt" type="number" min="20" max="5000" value="200" /></label>
+          </article>
+          <article class="client-input" data-client-id="2">
+            <strong>Cliente C2</strong>
+            <label>Hora inicial<input class="client-time" type="time" step="1" value="12:03:10" /></label>
+            <label>RTT de red (ms)<input class="client-rtt" type="number" min="20" max="5000" value="360" /></label>
+          </article>
+          <article class="client-input" data-client-id="3">
+            <strong>Cliente C3</strong>
+            <label>Hora inicial<input class="client-time" type="time" step="1" value="11:59:45" /></label>
+            <label>RTT de red (ms)<input class="client-rtt" type="number" min="20" max="5000" value="500" /></label>
+          </article>
+        </div>
+
+        <button class="button button--teal" id="run-cristian">Sincronizar clientes</button>
+        <p class="error" id="cristian-error" role="alert"></p>
+
+        <div class="cristian-results" id="cristian-results" hidden>
+          <div class="sync-flow"><span>Clientes</span><i></i><span>Servidor</span><i></i><span>Relojes corregidos</span></div>
+          <div class="sync-cards" id="cristian-cards"></div>
+          <p class="success-message" id="sync-result"></p>
+        </div>
+      </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  </body>
+</html>
