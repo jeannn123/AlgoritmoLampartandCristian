@@ -1,79 +1,70 @@
-class LamportBakerySimulator:
-    """Simula tickets concurrentes del algoritmo de la panaderia."""
+PROCESS_IDS = [1, 2, 3, 4, 5]
 
-    PROCESS_IDS = (1, 2, 3, 4, 5)
 
-    def __init__(self, request_rounds: list[list[int]]) -> None:
-        if not isinstance(request_rounds, list):
-            raise TypeError("Las rondas de solicitud no son validas.")
+def simulate(request_rounds):
+    tickets = {process_id: 0 for process_id in PROCESS_IDS}
+    requested_ids = []
+    normalized_rounds = []
 
-        self.request_rounds = []
-        requested_ids = []
+    # Los procesos de una misma ronda reciben el mismo ticket.
+    for request_round in request_rounds:
+        if not request_round:
+            raise ValueError("La ronda no puede estar vacia.")
 
-        for request_round in request_rounds:
-            if not isinstance(request_round, list) or not request_round:
-                raise ValueError("Cada ronda debe incluir al menos un proceso.")
+        ticket = max(tickets.values()) + 1
+        current_round = []
 
-            process_ids = [int(process_id) for process_id in request_round]
-            self.request_rounds.append(process_ids)
-            requested_ids.extend(process_ids)
+        for process_id in request_round:
+            process_id = int(process_id)
 
-        invalid_ids = set(requested_ids).difference(self.PROCESS_IDS)
-        if invalid_ids:
-            raise ValueError("Solo existen los procesos P1, P2, P3, P4 y P5.")
-        if len(requested_ids) != len(set(requested_ids)):
-            raise ValueError("Un proceso no puede solicitar acceso dos veces.")
+            if process_id not in PROCESS_IDS:
+                raise ValueError("El proceso no existe.")
+            if process_id in requested_ids:
+                raise ValueError("El proceso ya tiene un ticket.")
 
-        self.requested_ids = set(requested_ids)
+            tickets[process_id] = ticket
+            requested_ids.append(process_id)
+            current_round.append(process_id)
 
-    def _assign_tickets(self) -> dict[int, int]:
-        tickets = {process_id: 0 for process_id in self.PROCESS_IDS}
+        normalized_rounds.append(current_round)
 
-        for request_round in self.request_rounds:
-            next_ticket = max(tickets.values()) + 1
-            for process_id in request_round:
-                tickets[process_id] = next_ticket
+    def priority(process_id):
+        return tickets[process_id], process_id
 
-        return tickets
+    access_order = sorted(requested_ids, key=priority)
 
-    def simulate(self) -> dict:
-        tickets = self._assign_tickets()
-        access_order = sorted(
-            self.requested_ids,
-            key=lambda process_id: (tickets[process_id], process_id),
+    processes = []
+    for process_id in PROCESS_IDS:
+        is_requesting = process_id in requested_ids
+        processes.append(
+            {
+                "id": process_id,
+                "requesting": is_requesting,
+                "ticket": tickets[process_id] if is_requesting else None,
+                "queue_position": (
+                    access_order.index(process_id) + 1 if is_requesting else None
+                ),
+                "status": "En espera" if is_requesting else "No solicito acceso",
+            }
         )
 
-        processes = []
-        for process_id in self.PROCESS_IDS:
-            is_requesting = process_id in self.requested_ids
-            processes.append(
-                {
-                    "id": process_id,
-                    "requesting": is_requesting,
-                    "ticket": tickets[process_id] if is_requesting else None,
-                    "queue_position": (
-                        access_order.index(process_id) + 1 if is_requesting else None
-                    ),
-                    "status": "En espera" if is_requesting else "No solicito acceso",
-                }
-            )
-
-        rounds = [
+    rounds = []
+    for number, request_round in enumerate(normalized_rounds, start=1):
+        rounds.append(
             {
-                "number": index,
+                "number": number,
                 "ticket": tickets[request_round[0]],
                 "processes": request_round,
             }
-            for index, request_round in enumerate(self.request_rounds, start=1)
-        ]
+        )
 
-        return {
-            "concept": (
-                "Los procesos seleccionados en una misma ronda solicitan acceso al mismo "
-                "tiempo y reciben el mismo ticket. El orden final compara (ticket, ID)."
-            ),
-            "processes": processes,
-            "rounds": rounds,
-            "access_order": access_order,
-            "first_process": access_order[0] if access_order else None,
-        }
+    return {
+        "concept": (
+            "Los procesos de una ronda reciben el mismo ticket. "
+            "El orden final se calcula por (ticket, ID)."
+        ),
+        "processes": processes,
+        "rounds": rounds,
+        "access_order": access_order,
+        "first_process": access_order[0] if access_order else None,
+    }

@@ -159,9 +159,9 @@ async function runCristian() {
     )
     .join("");
 
-  document.getElementById("sync-result").textContent = data.all_synchronized
-    ? `Resultado final: los ${data.clients.length} clientes quedaron sincronizados.`
-    : "No fue posible sincronizar todos los clientes.";
+  document.getElementById(
+    "sync-result"
+  ).textContent = `Resultado final: los ${data.clients.length} clientes quedaron sincronizados.`;
   document.getElementById("cristian-results").hidden = false;
 }
 

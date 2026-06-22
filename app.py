@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template, request
 
-from src.algorithms.cristian import CristianSimulator
-from src.algorithms.lamport import LamportBakerySimulator
+from src.algorithms.cristian import simulate as run_cristian
+from src.algorithms.lamport import simulate as run_lamport
 
 
 app = Flask(__name__)
@@ -17,8 +17,8 @@ def simulate_lamport():
     payload = request.get_json(silent=True) or {}
 
     try:
-        simulator = LamportBakerySimulator(payload.get("request_rounds", []))
-        return jsonify(simulator.simulate())
+        result = run_lamport(payload.get("request_rounds", []))
+        return jsonify(result)
     except (TypeError, ValueError) as error:
         return jsonify({"error": str(error)}), 400
 
@@ -28,11 +28,11 @@ def simulate_cristian():
     payload = request.get_json(silent=True) or {}
 
     try:
-        simulator = CristianSimulator(
-            server_time=payload.get("server_time", "12:00:00"),
-            clients=payload.get("clients", []),
+        result = run_cristian(
+            payload.get("server_time", "12:00:00"),
+            payload.get("clients", []),
         )
-        return jsonify(simulator.simulate())
+        return jsonify(result)
     except (TypeError, ValueError) as error:
         return jsonify({"error": str(error)}), 400
 
