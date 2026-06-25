@@ -4,17 +4,34 @@ async function postJson(url, payload) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  const data = await response.json();
+  const contentType = response.headers.get("content-type") || "";
+  const isJsonResponse = contentType.includes("application/json");
+  const data = isJsonResponse ? await response.json() : null;
+  const responseText = isJsonResponse ? "" : (await response.text()).trim();
 
   if (!response.ok) {
-    throw new Error(data.error || "No fue posible ejecutar la simulacion.");
+    throw new Error(
+      data?.error ||
+        responseText ||
+        `La solicitud fallo con estado ${response.status}.`
+    );
   }
+
+  if (!isJsonResponse) {
+    throw new Error("El servidor respondio en un formato no valido.");
+  }
+
   return data;
 }
 
 function setError(elementId, message = "") {
   document.getElementById(elementId).textContent = message;
 }
+
+const apiRoutes = {
+  lamportSimulate: document.body.dataset.lamportUrl,
+  cristianSimulate: document.body.dataset.cristianUrl,
+};
 
 let lamportRounds = [];
 
@@ -64,7 +81,7 @@ async function assignTicketsToRound() {
   }
 
   const newRounds = [...lamportRounds, selectedIds];
-  const data = await postJson("/api/lamport/simulate", { request_rounds: newRounds });
+  const data = await postJson(apiRoutes.lamportSimulate, { request_rounds: newRounds });
 
   lamportRounds = newRounds;
   updateProcessCards(data.processes);
@@ -80,7 +97,7 @@ async function runLamport() {
     throw new Error("Asigna primero al menos un ticket.");
   }
 
-  const data = await postJson("/api/lamport/simulate", { request_rounds: lamportRounds });
+  const data = await postJson(apiRoutes.lamportSimulate, { request_rounds: lamportRounds });
 
   document.getElementById("lamport-concept").textContent = data.concept;
   const orderedProcesses = [...data.processes].sort(
@@ -137,7 +154,7 @@ function formatAdjustment(value) {
 
 async function runCristian() {
   setError("cristian-error");
-  const data = await postJson("/api/cristian/simulate", {
+  const data = await postJson(apiRoutes.cristianSimulate, {
     server_time: document.getElementById("server-time").value,
     clients: getClients(),
   });

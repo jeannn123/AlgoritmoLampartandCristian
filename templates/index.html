@@ -6,7 +6,10 @@
     <title>Lamport y Cristian | Simulador</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
   </head>
-  <body>
+  <body
+    data-lamport-url="{{ url_for('simulate_lamport') }}"
+    data-cristian-url="{{ url_for('simulate_cristian') }}"
+  >
     <header class="hero">
       <p class="eyebrow">Sistemas distribuidos</p>
       <h1>Dos algoritmos, dos problemas distintos</h1>
